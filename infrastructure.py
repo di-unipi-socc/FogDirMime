@@ -64,7 +64,7 @@ class Infrastructure():
             for e2 in adj_list:
                 self.links[e1][e2]['bandwidth'].sample_value()
                 self.links[e1][e2]['latency'].sample_value()
-
+    
 
     def add_link(self, link):
         if link.endpoint_a in self.things or link.endpoint_a in self.nodes:
