@@ -20,7 +20,7 @@ class Infrastructure():
             print("\t\t with capabilities: " + str(capabilities) + "\n")
       
     def edit_node(self, node_id, capabilities):
-        if node_id in self.things.keys():
+        if node_id in self.nodes.keys():
             self.nodes[node_id] = capabilities
             print("Editing '" + str(node_id) + "' with capabilities " )
             print("\t\t with capabilities: " + str(capabilities) + "\n")
@@ -64,7 +64,7 @@ class Infrastructure():
             for e2 in adj_list:
                 self.links[e1][e2]['bandwidth'].sample_value()
                 self.links[e1][e2]['latency'].sample_value()
-    
+
 
     def add_link(self, link):
         if link.endpoint_a in self.things or link.endpoint_a in self.nodes:
