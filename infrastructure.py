@@ -56,11 +56,15 @@ class Infrastructure():
         return json.dumps(self.nodes)
 
     def get_links(self):
-        return json.dumps(self.links)
+        return self.links
+    
+    def sample_links(self):
+        for e1 in self.links.keys():
+            adj_list = self.links[e1].keys()
+            for e2 in adj_list:
+                self.links[e1][e2]['bandwidth'].sample_value()
+                self.links[e1][e2]['latency'].sample_value()
 
-    def get_alerts(self):
-        alerts = []
-        return alerts
 
     def add_link(self, link):
         if link.endpoint_a in self.things or link.endpoint_a in self.nodes:
@@ -73,13 +77,23 @@ class Infrastructure():
         else:
             print("Endpoint " + link.endpoint_b + " is not a valid endpoint.")
             return
-            
-        self.links[link.endpoint_a] = {}
-        self.links[link.endpoint_b] = {}
-        self.links[link.endpoint_a]['bandwidth'] = link.qos_profile.bandwidth_ab.toJSON()
-        self.links[link.endpoint_b]['bandwidth'] = link.qos_profile.bandwidth_ba.toJSON()
-        self.links[link.endpoint_a]['latency'] = link.qos_profile.latency.toJSON()
-        self.links[link.endpoint_b]['latency'] = link.qos_profile.latency.toJSON()
+        
+        print("Adding link between " + link.endpoint_a + " and " + link.endpoint_b)
+
+        if not(link.endpoint_a in self.links.keys()):
+            self.links[link.endpoint_a] = {}
+        if not(link.endpoint_b in self.links.keys()):
+            self.links[link.endpoint_b] = {}
+
+        if not (link.endpoint_b in self.links[link.endpoint_a]):
+            self.links[link.endpoint_a][link.endpoint_b] = {}
+        if not (link.endpoint_a in self.links[link.endpoint_b]):
+            self.links[link.endpoint_b][link.endpoint_a] = {}
+
+        self.links[link.endpoint_a][link.endpoint_b]['bandwidth'] = link.qos_profile.bandwidth_ab
+        self.links[link.endpoint_b][link.endpoint_a]['bandwidth'] = link.qos_profile.bandwidth_ba
+        self.links[link.endpoint_a][link.endpoint_b]['latency'] = link.qos_profile.latency
+        self.links[link.endpoint_b][link.endpoint_a]['latency'] = link.qos_profile.latency
   
   
 
@@ -96,9 +110,7 @@ I.edit_node("fog_2", {'hardware' : {'ram' : 4, 'hdd' : 20, 'cpu' : 2}})
 I.edit_node("fog_1", {'hardware' : {'ram' : 4, 'hdd' : 20, 'cpu' : 2}})
 print(I.nodes)
 I.add_link(Link('fog_1', 'fog_2'))
-I.delete_node('fog_2')
-
-
+#I.delete_node('fog_2')
 
 I.add_thing("t1", "water")
 I.add_thing("t1", "gas")
@@ -109,7 +121,18 @@ print(I.things)
 I.delete_thing("t3")
 print(I.things)
 
+b_ab = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.5, 0.0])
+b_ba = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.0, 0.0])
+l = ProbabilityDistribution([0.5, 0.25, 0.25], [50.0, 60.0, 100.0])
+q = QoSProfile(b_ab, b_ba, l)
+q.sample_qos()
 
+I.sample_links()
+
+I.add_link(Link("fog_1", "fog_2", q))
+
+print(I.get_links())
+I.sample_links()
 print(I.get_links())
 
 print(I.get_nodes())
