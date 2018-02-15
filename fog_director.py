@@ -28,11 +28,16 @@ class FogDirSim():
         self.app_manager.new_deployment(deployment_id, app_id) 
     
     def add_link(self, link):
-        self.infrastructure.add_link(link)
+        return self.infrastructure.add_link(link)
 
     def deploy_component(self, deployment_id, component, node ):
         app = self.app_manager.deploying_apps[deployment_id].app_description
+        deployment = self.app_manager.deploying_apps[deployment_id].deployment
         component_requirements = app['components'][component]
+
+        if component in deployment:
+            print("Cannot deploy" + component +", it is already deployed.")
+            return
 
         if node in self.infrastructure.nodes and self.can_support(component_requirements, node):
             print("Node '"+ node +"' can accomodate component '"+ component +"'.")
@@ -133,35 +138,44 @@ class FogDirSim():
     #     return resource_alerts
     
     def check_c2c_alert(self, deployment_id):
-        resource_alerts = []
+        alerts = []
         deployment = self.app_manager.running_apps[deployment_id]
         for lr in deployment.app_description["link_requirements"]:
-            print(lr)
             a = lr['component_a']
             b = lr['component_b']
             node_a = deployment.deployment[a]
             node_b = deployment.deployment[b]
             q = lr['qos_profile']
+            if node_a != node_b and not(self.infrastructure.links[node_a][node_b]['bandwidth'].value >= q['bw_ab'] and self.infrastructure.links[node_b][node_a]['bandwidth'].value >= q['bw_ba'] and self.infrastructure.links[node_a][node_b]['latency'].value <= q['latency'] and self.infrastructure.links[node_b][node_a]['latency'].value <= q['latency']):
+                alerts.append({"alert_type":"c2c", "c1": a, "c2": b})
 
-            print (node_a)
-            print(node_b)
-            print(q)
-        return resource_alerts
+        return alerts
 
     def get_alert(self, deployment_id):
         alerts = []
         self.infrastructure.sample_links()
-        alerts.append(self.check_resource_alert(deployment_id))
+        #alerts.append(self.check_resource_alert(deployment_id))
         #alerts.append(self.check_c2t_alert(deployment_id))
-        alerts.append(self.check_c2c_alert(deployment_id))
+        alerts = alerts + (self.check_c2c_alert(deployment_id))
         return alerts
 
 
 fd = FogDirSim()
-fd.add_node("fog_1", {'hardware' : {'ram' : 4, 'hdd' : 64, 'cpu' : 2}})
+fd.add_node("fog_1", {'hardware' : {'ram' : 4, 'hdd' : 164, 'cpu' : 2}})
 fd.add_node("fog_2", {'hardware' : {'ram' : 4, 'hdd' : 20, 'cpu' : 2}})
 fd.add_thing("fire0", "fire")
 fd.add_thing("temperature0", "temperature")
+
+b_ab = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.5, 0.0])
+b_ba = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.0, 0.0])
+l = ProbabilityDistribution([0.5, 0.25, 0.25], [40.0, 45.0, 100.0])
+q = QoSProfile(b_ab, b_ba, l)
+q.sample_qos()
+
+fd.add_link(Link("fog_1", "fog_2", q))
+
+
+
 app = {"components" :  {"ThingsController" : {"hardware" : {"ram" : 1, "hdd" : 2, "cpu" : 1}}, "DataStorage" : {"hardware" : {"ram" : 2, "hdd" : 30, "cpu" : 1}}}, "thing_requirements" :  [{"component": "ThingsController", "thing_type": "temperature", "qos_profile" : {"latency" : 500, "bw_c2t": 0.1, "bw_t2c" : 0.1} }, {"component": "ThingsController", "thing_type": "fire", "qos_profile" : {"latency" : 50, "bw_c2t": 0.1, "bw_t2c" : 0.1} } ], "link_requirements" : [ {"component_a" : "ThingsController", "component_b" : "DataStorage", "qos_profile" : {"latency" : 160, "bw_ab": 0.7, "bw_ba" : 0.5} }]}
 fd.publish_app("app1", app)
 fd.new_deployment("dep1", "app1")
@@ -170,7 +184,22 @@ fd.bind_thing("dep1", 0, "temperature0")
 fd.bind_thing("dep1", 1, "fire0") 
 fd.deploy_component("dep1", "DataStorage", "fog_1")
 fd.start_app("dep1")
-print(fd.get_alert("dep1"))
-print(fd.get_published_apps())
-#fd.unbind_thing("dep1", 0)
+
+runs = 3000
+
+alert_no = 0
+for i in range(0, runs):
+    fatto = False
+    alerts=fd.get_alert("dep1")
+    alert_no+=len(alerts)
+    if alert_no == 3 and not(fatto):
+        fd.stop_app("dep1")
+        fd.undeploy_component("dep1", "ThingsController")
+        fd.deploy_component("dep1", "ThingsController", "fog_1")
+        fd.start_app("dep1")
+        fatto = True
+    alerts = []
+
+print(alert_no/runs)
+
 
