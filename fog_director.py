@@ -91,51 +91,68 @@ class FogDirSim():
         return remaining
     
     def delete_deployment(self, deployment_id):
-        self.app_manager.delete_deployment(deployment_id)
+        return self.app_manager.delete_deployment(deployment_id)
     
     def unpublish_app(self, app_id):
-        self.app_manager.unpublish_app(app_id)
+        return self.app_manager.unpublish_app(app_id)
 
     def get_published_apps(self):
-        self.app_manager.get_published_apps()
+        return self.app_manager.get_published_apps()
 
     def get_deploying_apps(self):
-        self.app_manager.get_deploying_apps()
+        return self.app_manager.get_deploying_apps()
 
     def get_running_apps(self):
-        self.app_manager.get_running_apps()
+        return self.app_manager.get_running_apps()
 
     def get_things(self):
-        self.infrastructure.get_things()
+        return self.infrastructure.get_things()
 
     def get_nodes(self):
-        self.infrastructure.get_nodes()
+        return self.infrastructure.get_nodes()
 
     def get_links(self):
-        self.infrastructure.get_links()
+        return self.infrastructure.get_links()
 
     def check_resource_alert(self, deployment_id):
         resource_alerts = []
         return resource_alerts
     
-    def check_c2t_alert(self, deployment_id):
-        resource_alerts = []
-        deployment = self.app_manager.running_apps[deployment_id]
-        for tr in deployment.app_description['thing_requirements']:
-            qos = tr['qos_profile']
-            node = deployment.deployment[]
-            #print(qos)
-        return resource_alerts
+    # def check_c2t_alert(self, deployment_id):
+    #     resource_alerts = []
+    #     deployment = self.app_manager.running_apps[deployment_id]
+    #     i = 0
+    #     for tr in deployment.app_description['thing_requirements']:
+    #         qos = tr['qos_profile']
+    #         thing = deployment.things_binding[i]
+    #         node = deployment.deployment[tr['component']]
+    #         #if (self.infrastructure.links[node][])
+    #         print(qos)
+    #         print(thing)
+    #         print(node)
+    #     return resource_alerts
     
     def check_c2c_alert(self, deployment_id):
         resource_alerts = []
+        deployment = self.app_manager.running_apps[deployment_id]
+        for lr in deployment.app_description["link_requirements"]:
+            print(lr)
+            a = lr['component_a']
+            b = lr['component_b']
+            node_a = deployment.deployment[a]
+            node_b = deployment.deployment[b]
+            q = lr['qos_profile']
+
+            print (node_a)
+            print(node_b)
+            print(q)
         return resource_alerts
 
     def get_alert(self, deployment_id):
         alerts = []
         self.infrastructure.sample_links()
         alerts.append(self.check_resource_alert(deployment_id))
-        alerts.append(self.check_c2t_alert(deployment_id))
+        #alerts.append(self.check_c2t_alert(deployment_id))
         alerts.append(self.check_c2c_alert(deployment_id))
         return alerts
 
@@ -154,5 +171,6 @@ fd.bind_thing("dep1", 1, "fire0")
 fd.deploy_component("dep1", "DataStorage", "fog_1")
 fd.start_app("dep1")
 print(fd.get_alert("dep1"))
+print(fd.get_published_apps())
 #fd.unbind_thing("dep1", 0)
 
