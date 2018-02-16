@@ -1,5 +1,6 @@
 from app_manager import *
 from infrastructure import *
+import random as rnd
 
 class FogDirSim():
     def __init__(self):
@@ -83,7 +84,18 @@ class FogDirSim():
         self.app_manager.unbind_thing(deployment_id, thing_requirement)
     
     def undeploy_component(self, deployment_id, component):
-        self.app_manager.undeploy_component(deployment_id, component)
+        app = self.app_manager.deploying_apps[deployment_id].app_description
+        deployment = self.app_manager.deploying_apps[deployment_id].deployment
+        component_requirements = app['components'][component]
+
+        if component in deployment:
+            node = deployment[component]
+            self.app_manager.undeploy_component(deployment_id, component)
+            self.edit_node(node, self.uninstall(component_requirements, node))
+            print("Cannot deploy" + component +", it is already deployed.")
+            return
+        else:
+            print("Component " + component + " to be undepoyed is not part of deployment "+ deployment_id)
 
     def uninstall(self, component_requirements, node):
         cr = component_requirements['hardware']
@@ -123,19 +135,21 @@ class FogDirSim():
         resource_alerts = []
         return resource_alerts
     
-    # def check_c2t_alert(self, deployment_id):
-    #     resource_alerts = []
-    #     deployment = self.app_manager.running_apps[deployment_id]
-    #     i = 0
-    #     for tr in deployment.app_description['thing_requirements']:
-    #         qos = tr['qos_profile']
-    #         thing = deployment.things_binding[i]
-    #         node = deployment.deployment[tr['component']]
-    #         #if (self.infrastructure.links[node][])
-    #         print(qos)
-    #         print(thing)
-    #         print(node)
-    #     return resource_alerts
+    def check_c2t_alert(self, deployment_id):
+        alerts = []
+        deployment = self.app_manager.running_apps[deployment_id]
+        i = 0
+        for tr in deployment.app_description['thing_requirements']:
+            q = tr['qos_profile']
+            thing = deployment.things_binding[i]['thing_id']
+            node = deployment.deployment[tr['component']]
+            links = self.infrastructure.links
+            if (not(links[node][thing]['bandwidth'].value >= q['bw_c2t'] 
+                and links[thing][node]['bandwidth'].value >= q['bw_t2c'] 
+                and links[node][thing]['latency'].value <= q['latency'] 
+                and links[thing][node]['latency'].value <= q['latency'])):
+                alerts.append({"alert_type":"c2t", "component": node, "thing": thing})
+        return alerts
     
     def check_c2c_alert(self, deployment_id):
         alerts = []
@@ -146,6 +160,7 @@ class FogDirSim():
             node_a = deployment.deployment[a]
             node_b = deployment.deployment[b]
             q = lr['qos_profile']
+           
             if node_a != node_b and not(self.infrastructure.links[node_a][node_b]['bandwidth'].value >= q['bw_ab'] and self.infrastructure.links[node_b][node_a]['bandwidth'].value >= q['bw_ba'] and self.infrastructure.links[node_a][node_b]['latency'].value <= q['latency'] and self.infrastructure.links[node_b][node_a]['latency'].value <= q['latency']):
                 alerts.append({"alert_type":"c2c", "c1": a, "c2": b})
 
@@ -155,13 +170,13 @@ class FogDirSim():
         alerts = []
         self.infrastructure.sample_links()
         #alerts.append(self.check_resource_alert(deployment_id))
-        #alerts.append(self.check_c2t_alert(deployment_id))
+        alerts = alerts + (self.check_c2t_alert(deployment_id))
         alerts = alerts + (self.check_c2c_alert(deployment_id))
         return alerts
 
 
 fd = FogDirSim()
-fd.add_node("fog_1", {'hardware' : {'ram' : 4, 'hdd' : 164, 'cpu' : 2}})
+fd.add_node("fog_1", {'hardware' : {'ram' : 4, 'hdd' : 64, 'cpu' : 2}})
 fd.add_node("fog_2", {'hardware' : {'ram' : 4, 'hdd' : 20, 'cpu' : 2}})
 fd.add_thing("fire0", "fire")
 fd.add_thing("temperature0", "temperature")
@@ -174,6 +189,12 @@ q.sample_qos()
 
 fd.add_link(Link("fog_1", "fog_2", q))
 
+fd.add_link(Link("fog_1", "fire0") )
+fd.add_link(Link("fog_1", "temperature0") )
+fd.add_link(Link("fog_2", "fire0") )
+fd.add_link(Link("fog_2", "temperature0") )
+
+
 
 
 app = {"components" :  {"ThingsController" : {"hardware" : {"ram" : 1, "hdd" : 2, "cpu" : 1}}, "DataStorage" : {"hardware" : {"ram" : 2, "hdd" : 30, "cpu" : 1}}}, "thing_requirements" :  [{"component": "ThingsController", "thing_type": "temperature", "qos_profile" : {"latency" : 500, "bw_c2t": 0.1, "bw_t2c" : 0.1} }, {"component": "ThingsController", "thing_type": "fire", "qos_profile" : {"latency" : 50, "bw_c2t": 0.1, "bw_t2c" : 0.1} } ], "link_requirements" : [ {"component_a" : "ThingsController", "component_b" : "DataStorage", "qos_profile" : {"latency" : 160, "bw_ab": 0.7, "bw_ba" : 0.5} }]}
@@ -185,21 +206,27 @@ fd.bind_thing("dep1", 1, "fire0")
 fd.deploy_component("dep1", "DataStorage", "fog_1")
 fd.start_app("dep1")
 
-runs = 3000
+runs = 1
 
 alert_no = 0
 for i in range(0, runs):
     fatto = False
     alerts=fd.get_alert("dep1")
-    alert_no+=len(alerts)
-    if alert_no == 3 and not(fatto):
+    print("****" + str(alerts))
+    #print(alert_no)
+    if len(alerts) > 0 and not(fatto):
+        alert_no+=len(alerts)
         fd.stop_app("dep1")
         fd.undeploy_component("dep1", "ThingsController")
-        fd.deploy_component("dep1", "ThingsController", "fog_1")
+        fog_node = rnd.choice(["fog_1", "fog_2"])
+        fd.deploy_component("dep1", "ThingsController", fog_node)
         fd.start_app("dep1")
         fatto = True
+
     alerts = []
 
+
+print(str(alert_no) + " alerts were raised.")
 print(alert_no/runs)
 
 
