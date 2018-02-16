@@ -27,6 +27,51 @@ class ProbabilityDistribution():
 #     print(p)
 
 
+class HardwareResources():
+    
+    def __init__(self, ram = ProbabilityDistribution(), hdd = ProbabilityDistribution(), cpu = ProbabilityDistribution() ):
+        self.ram = ram
+        self.hdd = hdd
+        self.cpu = cpu
+    
+    def sample_resources(self):
+        self.ram.sample_value()
+        self.cpu.sample_value()
+        self.hdd.sample_value()
+    
+    def get_ram(self):
+        return self.ram.value
+    
+    def get_hdd(self):
+        return self.hdd.value
+    
+    def get_cpu(self):
+        return self.cpu.value
+
+
+class Node():
+    
+    def __init__(self, node_id = '', resources = HardwareResources(), software = []):
+        self.node_id = node_id
+        self.resources = resources
+        self.software = software
+        self.used_ram = 0
+        self.used_hdd = 0
+        self.used_cpu = 0  
+    
+    def sample_resources(self):
+        self.resources.sample_resources()
+
+    def get_available_ram(self):
+        return self.resources.get_ram() - self.used_ram
+    
+    def get_available_hdd(self):
+        return self.resources.get_hdd() - self.used_hdd
+    
+    def get_available_cpu(self):
+        return self.resources.get_cpu() - self.used_cpu
+
+
 
 class QoSProfile:
 
@@ -80,16 +125,6 @@ class Link():
     def sample_qos(self):
         self.qos_profile.sample_qos()
     
-    def get_bandwidth(self, endpoint_x, endpoint_y):
-        if (endpoint_x == self.endpoint_a and endpoint_y == self.endpoint_b):
-            return self.qos_profile.get_bandwidth_ab()
-        elif (endpoint_x == self.endpoint_b and endpoint_y == self.endpoint_a):
-            return self.qos_profile.get_bandwidth_ba()
-        else:
-            print("Invalid input to get_bandwidth for link (" + self.endpoint_a +", " + self.endpoint_b + ")." )
-    
-    def get_latency(self):
-        return 
     
     def __repr__(self):
         b_ab = self.qos_profile.get_bandwidth_ab()

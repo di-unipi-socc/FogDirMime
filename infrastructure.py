@@ -11,19 +11,19 @@ class Infrastructure():
         self.nodes = {}
         self.links = {}
 
-    def add_node(self, node_id, capabilities):
+    def add_node(self, node):
+        node_id = node.node_id
         if node_id in self.nodes.keys() :
             print("Cannot add '" + str(node_id) + "' to the infrastructure. Identifier is already assigned to an existing node.\n" )
         else:
-            self.nodes[node_id] = capabilities
-            print("Adding '" + str(node_id) + "' to the infrastructure")
-            print("\t\t with capabilities: " + str(capabilities) + "\n")
+            self.nodes[node_id] = node
+            print("Adding '" + str(node_id) + "' to the infrastructure.")
       
-    def edit_node(self, node_id, capabilities):
+    def edit_node(self, node):
+        node_id = node.node_id
         if node_id in self.nodes.keys():
-            self.nodes[node_id] = capabilities
-            print("Editing '" + str(node_id) + "' with capabilities " )
-            print("\t\t with capabilities: " + str(capabilities) + "\n")
+            self.nodes[node_id] = node
+            print("Editing '" + str(node_id) + "'." )
         else:
             print("Cannot edit '" + str(node_id) + "' since it hasn't been added to the infrastructure yet.\n " )
     
@@ -57,6 +57,10 @@ class Infrastructure():
 
     def get_links(self):
         return self.links
+
+    def sample_resources(self):
+        for node in self.nodes.values():
+            node.sample_resources()
     
     def sample_links(self):
         for e1 in self.links.keys():
@@ -97,42 +101,58 @@ class Infrastructure():
   
   
 
-I = Infrastructure()
+# I = Infrastructure()
 
-I.add_node("fog_1", [])
-print(I.nodes)
+# ram = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[8.0, 7.0, 4.0, 1.0])
+# hdd = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[32.0, 28.0, 16.0, 12.0])
+# cpu = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[4.0, 3.0, 2.0, 1.0])
+# hw = HardwareResources(ram, hdd, cpu)
+# fog_1 = Node("fog_1", hw, [])
 
-I.add_node("fog_2", [])
-I.add_node("fog_1", [])
+# I.add_node(fog_1)
 
-print(I.nodes)
-I.edit_node("fog_2", {'hardware' : {'ram' : 4, 'hdd' : 20, 'cpu' : 2}})
-I.edit_node("fog_1", {'hardware' : {'ram' : 4, 'hdd' : 20, 'cpu' : 2}})
-print(I.nodes)
-I.add_link(Link('fog_1', 'fog_2'))
-#I.delete_node('fog_2')
 
-I.add_thing("t1", "water")
-I.add_thing("t1", "gas")
-I.add_thing("t2", "water")
-I.add_thing("t3", "broken_thing")
-print(I.things)
+# ram2 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[8.0, 7.0, 4.0, 1.0])
+# hdd2 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[64.0, 56.0, 32.0, 30.0])
+# cpu2 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[4.0, 3.0, 2.0, 1.0])
+# hw2 = HardwareResources(ram2, hdd2, cpu2)
+# fog_2 = Node("fog_2", hw2, [])
 
-I.delete_thing("t3")
-print(I.things)
+# I.add_node(fog_2)
+# I.sample_resources()
+# I.sample_resources()
+# print(I.nodes["fog_1"].resources.get_ram())
+# print(I.nodes["fog_2"].resources.get_ram())
 
-b_ab = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.5, 0.0])
-b_ba = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.0, 0.0])
-l = ProbabilityDistribution([0.5, 0.25, 0.25], [50.0, 60.0, 100.0])
-q = QoSProfile(b_ab, b_ba, l)
-q.sample_qos()
 
-I.sample_links()
+# print(I.nodes)
+# # I.edit_node("fog_2", {'hardware' : {'ram' : 4, 'hdd' : 20, 'cpu' : 2}})
+# # I.edit_node("fog_1", {'hardware' : {'ram' : 4, 'hdd' : 20, 'cpu' : 2}})
+# print(I.nodes)
+# I.add_link(Link('fog_1', 'fog_2'))
+# #I.delete_node('fog_2')
 
-I.add_link(Link("fog_1", "fog_2", q))
+# I.add_thing("t1", "water")
+# I.add_thing("t1", "gas")
+# I.add_thing("t2", "water")
+# I.add_thing("t3", "broken_thing")
+# print(I.things)
 
-print(I.get_links())
-I.sample_links()
-print(I.get_links())
+# I.delete_thing("t3")
+# print(I.things)
 
-print(I.get_nodes())
+# b_ab = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.5, 0.0])
+# b_ba = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.0, 0.0])
+# l = ProbabilityDistribution([0.5, 0.25, 0.25], [50.0, 60.0, 100.0])
+# q = QoSProfile(b_ab, b_ba, l)
+# q.sample_qos()
+
+# I.sample_links()
+
+# I.add_link(Link("fog_1", "fog_2", q))
+
+# print(I.get_links())
+# I.sample_links()
+# print(I.get_links())
+
+# print(I.get_nodes())
