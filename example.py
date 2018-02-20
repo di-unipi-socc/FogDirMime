@@ -1,4 +1,4 @@
-
+import fog_director
 
 fd = FogDirSim()
 
