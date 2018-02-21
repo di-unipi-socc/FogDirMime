@@ -36,16 +36,24 @@
 		"thing_type": "temperature",
 		"qos_profile": {
 			"latency": 1000,
-			"bw_c2t": 0,
-			"bw_t2c": 0
+			"bw_c2t": 0.1,
+			"bw_t2c": 0.1
 		}
 	}, {
 		"component": "ThingsController",
 		"thing_type": "fire",
 		"qos_profile": {
-			"latency": 1000,
-			"bw_c2t": 0,
-			"bw_t2c": 0
+			"latency": 65,
+			"bw_c2t": 0.1,
+			"bw_t2c": 0.1
+		}
+	}, {
+		"component": "ThingsController",
+		"thing_type": "fire",
+		"qos_profile": {
+			"latency": 65,
+			"bw_c2t": 0.1,
+			"bw_t2c": 0.1
 		}
 	}],
 	"link_requirements": [{
