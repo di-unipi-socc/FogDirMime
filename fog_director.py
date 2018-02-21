@@ -188,6 +188,9 @@ class FogDirSim():
         self.infrastructure.sample_resources()
 
     def get_alert(self, deployment_id):
+        if not(deployment_id in self.app_manager.running_apps):
+            print("Deployment '"+ str(deployment_id) + "' is not associated to an app currently running.")
+            return 
         alerts = []
         self.sample_state()
         self.infrastructure.sample_links()

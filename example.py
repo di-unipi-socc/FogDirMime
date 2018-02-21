@@ -4,23 +4,33 @@ fd = FogDirSim()
 
 fd.add_thing("fire0", "fire")
 fd.add_thing("temperature0", "temperature")
+fd.add_thing("water0", "water")
+fd.add_thing("video0", "video")
 
-ram = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[8.0, 7.0, 4.0, 1.0])
-hdd = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[32.0, 28.0, 16.0, 12.0])
-cpu = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[4.0, 3.0, 2.0, 1.0])
+#fog_1
+hdd = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[32.0, 28.0, 20.0, 16.0])
+ram = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[4.0, 3.0, 2.0, 1.0])
+cpu = ProbabilityDistribution([0.7, 0.3],[2.0, 1.0])
 hw = HardwareResources(ram, hdd, cpu)
-fog_1 = Node("fog_1", hw, [])
-
+fog_1 = Node("fog_1", hw, ["linux", "php", "sql"])
 fd.add_node(fog_1)
 
-
-ram2 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[8.0, 7.0, 4.0, 1.0])
-hdd2 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[64.0, 56.0, 32.0, 30.0])
-cpu2 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[11.0, 3.0, 2.0, 1.0])
+#fog_2
+hdd2 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[32.0, 28.0, 20.0, 16.0])
+ram2 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[2.0, 1.7, 1.5, 1.0])
+cpu2 = ProbabilityDistribution([0.7, 0.3],[2.0, 1.0])
 hw2 = HardwareResources(ram2, hdd2, cpu2)
-fog_2 = Node("fog_2", hw2, [])
-
+fog_2 = Node("fog_2", hw2, ["linux", "php"])
 fd.add_node(fog_2)
+
+#fog3
+hdd3 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[128.0, 100.0, 70.0, 50.0])
+ram3 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[12.0, 10.0, 8.0, 6.0])
+cpu3 = ProbabilityDistribution([0.7, 0.3],[4.0, 2.0])
+hw3 = HardwareResources(ram3, hdd3, cpu3)
+fog_3 = Node("fog_3", hw3, ["linux", "sql"])
+fd.add_node(fog_3)
+
 
 print(fd.infrastructure.nodes["fog_1"].get_available_ram())
 print(fd.infrastructure.nodes["fog_2"].get_available_ram())
@@ -43,14 +53,20 @@ print(fd.infrastructure.links)
 
 fd.sample_state()
 
-
-app = { "components": { "ThingsController": { "hardware": { "ram": 1, "hdd": 10, "cpu": 1 }, "software": [ "linux" ] }, "DataStorage": { "hardware": { "ram": 8, "hdd": 80, "cpu": 4 }, "software": [ "linux", "sql" ] }, "Dashboard": { "hardware": { "ram": 2, "hdd": 20, "cpu": 1 }, "software": [ "linux", "php" ] } }, "thing_requirements": [{ "component": "ThingsController", "thing_type": "temperature", "qos_profile": { "latency": 1000, "bw_c2t": 0.1, "bw_t2c": 0.1 } }, { "component": "ThingsController", "thing_type": "fire", "qos_profile": { "latency": 65, "bw_c2t": 0.1, "bw_t2c": 0.1 } }, { "component": "ThingsController", "thing_type": "fire", "qos_profile": { "latency": 65, "bw_c2t": 0.1, "bw_t2c": 0.1 } }], "link_requirements": [{ "component_a": "ThingsController", "component_b": "DataStorage", "qos_profile": { "latency": 160, "bw_ab": 3.5, "bw_ba": 0.5 } }, { "component_a": "ThingsController", "component_b": "Dashboard", "qos_profile": { "latency": 140, "bw_ab": 0.9, "bw_ba": 0.4 } }, { "component_a": "Dashboard", "component_b": "DataStorage", "qos_profile": { "latency": 100, "bw_ab": 0.3, "bw_ba": 1.5 } } ] }
+filename = "app.json"
+app = {}
+with open(filename) as file_object:
+    app = json.load(file_object) 
+print(app)
 fd.publish_app("app1", app)
 fd.new_deployment("dep1", "app1")
 fd.deploy_component("dep1", "ThingsController", "fog_1")
 fd.bind_thing("dep1", 0, "temperature0")  
 fd.bind_thing("dep1", 1, "fire0") 
-fd.deploy_component("dep1", "DataStorage", "fog_2")
+fd.bind_thing("dep1", 2, "video0") 
+fd.bind_thing("dep1", 3, "water0") 
+fd.deploy_component("dep1", "DataStorage", "fog_3")
+fd.deploy_component("dep1", "Dashboard", "fog_2")
 fd.start_app("dep1")
 
 runs = 10
@@ -61,7 +77,7 @@ for i in range(0, runs):
     alerts=fd.get_alert("dep1")
     print("****" + str(alerts))
     #print(alert_no)
-    if len(alerts) > 0 and not(fatto):
+    if alerts is not None and len(alerts) > 0 and not(fatto):
         print("Moving ThingsController")
         alert_no+=len(alerts)
         fd.stop_app("dep1")

@@ -49,7 +49,7 @@
 		}
 	}, {
 		"component": "ThingsController",
-		"thing_type": "videocamera",
+		"thing_type": "video",
 		"qos_profile": {
 			"latency": 25,
 			"bw_c2t": 0.1,
