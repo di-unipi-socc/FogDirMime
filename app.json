@@ -1,1 +1,79 @@
-{"components" :  {"ThingsController" : {"hardware" : {"ram" : 1, "hdd" : 2, "cpu" : 1}}, "DataStorage" : {"hardware" : {"ram" : 2, "hdd" : 30, "cpu" : 1}}}, "thing_requirements" :  [{"component": "ThingsController", "thing_type": "temperature", "qos_profile" : {"latency" : 500, "bw_c2t": 0.1, "bw_t2c" : 0.1} }, {"component": "ThingsController", "thing_type": "fire", "qos_profile" : {"latency" : 50, "bw_c2t": 0.1, "bw_t2c" : 0.1} } ], "link_requirements" : [ {"component_a" : "ThingsController", "component_b" : "DataStorage", "qos_profile" : {"latency" : 160, "bw_ab": 0.7, "bw_ba" : 0.5} }]}
+{
+	"components": {
+		"ThingsController": {
+			"hardware": {
+				"ram": 1,
+				"hdd": 10,
+				"cpu": 1
+			},
+			"software": [
+				"linux"
+			]
+		},
+		"DataStorage": {
+			"hardware": {
+				"ram": 8,
+				"hdd": 80,
+				"cpu": 4
+			},
+			"software": [
+				"linux", "sql"
+			]
+		},
+		"Dashboard": {
+			"hardware": {
+				"ram": 2,
+				"hdd": 20,
+				"cpu": 1
+			},
+			"software": [
+				"linux", "php"
+			]
+		}
+	},
+	"thing_requirements": [{
+		"component": "ThingsController",
+		"thing_type": "temperature",
+		"qos_profile": {
+			"latency": 1000,
+			"bw_c2t": 0,
+			"bw_t2c": 0
+		}
+	}, {
+		"component": "ThingsController",
+		"thing_type": "fire",
+		"qos_profile": {
+			"latency": 1000,
+			"bw_c2t": 0,
+			"bw_t2c": 0
+		}
+	}],
+	"link_requirements": [{
+			"component_a": "ThingsController",
+			"component_b": "DataStorage",
+			"qos_profile": {
+				"latency": 160,
+				"bw_ab": 3.5,
+				"bw_ba": 0.5
+			}
+		},
+		{
+			"component_a": "ThingsController",
+			"component_b": "Dashboard",
+			"qos_profile": {
+				"latency": 140,
+				"bw_ab": 0.9,
+				"bw_ba": 0.4
+			}
+		},
+		{
+			"component_a": "Dashboard",
+			"component_b": "DataStorage",
+			"qos_profile": {
+				"latency": 100,
+				"bw_ab": 0.3,
+				"bw_ba": 1.5
+			}
+		}
+	]
+}
