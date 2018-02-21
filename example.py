@@ -8,42 +8,60 @@ fd.add_thing("water0", "water")
 fd.add_thing("video0", "video")
 
 #fog_1
-hdd = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[32.0, 28.0, 20.0, 16.0])
-ram = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[4.0, 3.0, 2.0, 1.0])
-cpu = ProbabilityDistribution([0.7, 0.3],[2.0, 1.0])
+hdd = ProbabilityDistribution([0.8, 0.10, 0.05, 0.05],[32.0, 28.0, 20.0, 16.0])
+ram = ProbabilityDistribution([0.8, 0.10, 0.05, 0.05],[4.0, 3.0, 2.0, 1.0])
+cpu = ProbabilityDistribution([0.8, 0.2],[2.0, 1.0])
 hw = HardwareResources(ram, hdd, cpu)
 fog_1 = Node("fog_1", hw, ["linux", "php", "sql"])
 fd.add_node(fog_1)
 
 #fog_2
-hdd2 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[32.0, 28.0, 20.0, 16.0])
-ram2 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[2.0, 1.7, 1.5, 1.0])
-cpu2 = ProbabilityDistribution([0.7, 0.3],[2.0, 1.0])
+hdd2 = ProbabilityDistribution([0.8, 0.10, 0.05, 0.05],[32.0, 28.0, 20.0, 16.0])
+ram2 = ProbabilityDistribution([0.8, 0.10, 0.05, 0.05],[2.0, 1.7, 1.5, 1.0])
+cpu2 = ProbabilityDistribution([0.8, 0.2],[2.0, 1.0])
 hw2 = HardwareResources(ram2, hdd2, cpu2)
 fog_2 = Node("fog_2", hw2, ["linux", "php"])
 fd.add_node(fog_2)
 
 #fog3
-hdd3 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[128.0, 100.0, 70.0, 50.0])
-ram3 = ProbabilityDistribution([0.5, 0.20, 0.20, 0.10],[12.0, 10.0, 8.0, 6.0])
-cpu3 = ProbabilityDistribution([0.7, 0.3],[4.0, 2.0])
+hdd3 = ProbabilityDistribution([0.8, 0.10, 0.05, 0.05],[128.0, 100.0, 70.0, 50.0])
+ram3 = ProbabilityDistribution([0.8, 0.10, 0.05, 0.05],[12.0, 10.0, 8.0, 6.0])
+cpu3 = ProbabilityDistribution([0.8, 0.2],[4.0, 2.0])
 hw3 = HardwareResources(ram3, hdd3, cpu3)
 fog_3 = Node("fog_3", hw3, ["linux", "sql"])
 fd.add_node(fog_3)
 
+#fog_1 - fog_2
+b_f1_f2 = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.5, 0.0])
+b_f2_f1 = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.0, 0.0])
+l_f1_f2 = ProbabilityDistribution([0.5, 0.25, 0.25], [40.0, 45.0, 100.0])
+q_f1_f2 = QoSProfile(b_f1_f2, b_f2_f1, l_f1_f2)
+q_f1_f2.sample_qos()
 
-print(fd.infrastructure.nodes["fog_1"].get_available_ram())
-print(fd.infrastructure.nodes["fog_2"].get_available_ram())
+fd.add_link(Link("fog_1", "fog_2", q_f1_f2))
 
-b_ab = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.5, 0.0])
-b_ba = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.0, 0.0])
-l = ProbabilityDistribution([0.5, 0.25, 0.25], [40.0, 45.0, 100.0])
-q = QoSProfile(b_ab, b_ba, l)
-q.sample_qos()
+#fog_2 - fog_3
+b_f2_f3 = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.5, 0.0])
+b_f3_f2 = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.0, 0.0])
+l_f2_f3 = ProbabilityDistribution([0.5, 0.25, 0.25], [40.0, 45.0, 100.0])
+q_f2_f3 = QoSProfile(b_f2_f3, b_f3_f2, l_f2_f3)
+q_f2_f3.sample_qos()
+
+fd.add_link(Link("fog_2", "fog_3", q_f2_f3))
+
+
+#fog_1 - fog_3
+b_f1_f3 = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.5, 0.0])
+b_f3_f1 = ProbabilityDistribution([0.5, 0.25, 0.25], [12.0, 6.0, 0.0])
+l_f1_f3 = ProbabilityDistribution([0.5, 0.25, 0.25], [40.0, 45.0, 100.0])
+q_f1_f3 = QoSProfile(b_f1_f3, b_f3_f1, l_f1_f3)
+q_f1_f3.sample_qos()
+
+fd.add_link(Link("fog_1", "fog_2", q_f1_f3))
+
+#fog to things
 
 fd.add_link(Link("fog_1", "fog_2", q))
-
-
 fd.add_link(Link("fog_1", "fire0", q) )
 fd.add_link(Link("fog_1", "temperature0", q) )
 fd.add_link(Link("fog_2", "fire0", q) )
@@ -52,6 +70,7 @@ fd.add_link(Link("fog_2", "temperature0", q) )
 print(fd.infrastructure.links)
 
 fd.sample_state()
+
 
 filename = "app.json"
 app = {}
