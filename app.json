@@ -49,9 +49,17 @@
 		}
 	}, {
 		"component": "ThingsController",
-		"thing_type": "fire",
+		"thing_type": "videocamera",
 		"qos_profile": {
-			"latency": 65,
+			"latency": 25,
+			"bw_c2t": 0.1,
+			"bw_t2c": 5.0
+		}
+	}, {
+		"component": "ThingsController",
+		"thing_type": "water",
+		"qos_profile": {
+			"latency": 1000,
 			"bw_c2t": 0.1,
 			"bw_t2c": 0.1
 		}
