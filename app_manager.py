@@ -200,38 +200,3 @@ class AppManager():
     def get_running_apps(self):
         return json.dumps(self.running_apps)
 
-
-# fd = AppManager()
-
-# fd.publish_app("app1", {'components' : {'A' : {'hardware' : {'ram' : 1, 'hdd' : 5, 'cpu' : 1}}},"thing_requirements" : [{'component': 'A', 'thing_type': 'water', 'qos_profile' : {'latency' : 15, 'bw_c2t': 0.5, 'bw_t2c' : 1} }]})
-# fd.new_deployment("dep1", "app1")
-# fd.deploy_component("dep1", 'A', "fog2")
-# fd.bind_thing("dep1", 0, {'thing_id' : "water1", 'thing_type': 'water'})
-# fd.bind_thing("dep1", 0, {'thing_id' : "water1", 'thing_type': 'water'})
-# fd.start_app("dep1")
-# fd.unpublish_app("app1")
-# fd.stop_app("dep1")
-# fd.undeploy_component("dep1", 'A')
-# fd.unpublish_app("app1")
-# fd.delete_deployment("dep1")
-# fd.unpublish_app("app1")
-
-
-# fd.publish_app("app2", [])
-# fd.publish_app("app1", [])
-
-# fd.new_deployment("dep1", "app3")
-
-# fd.delete_deployment("dep1")
-
-# fd.new_deployment("dep1bis", "app1")
-# print(fd.deploying_apps['dep1bis'].app_description['thing_requirements'])
-# fd.deploy_component("dep1bis", 'A', "fog1")
-# fd.bind_thing("dep1bis", 0, {'thing_id' : "water1", 'thing_type': 'water'})
-
-
-# fd.undeploy_component("dep1bis", "A")
-# fd.undeploy_component("dep1bis", "A")
-# fd.deploy_component("dep1bis", 'B', "fog1")
-# fd.delete_deployment("dep1bis")
-

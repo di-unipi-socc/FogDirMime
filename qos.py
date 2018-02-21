@@ -72,7 +72,6 @@ class Node():
         return self.resources.get_cpu() - self.used_cpu
 
 
-
 class QoSProfile:
 
     def __init__(self, bandwidth_ab = ProbabilityDistribution(), bandwidth_ba = ProbabilityDistribution(), latency = ProbabilityDistribution()):
