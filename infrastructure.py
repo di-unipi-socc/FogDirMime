@@ -15,39 +15,48 @@ class Infrastructure():
         node_id = node.node_id
         if node_id in self.nodes.keys() :
             print("Cannot add '" + str(node_id) + "' to the infrastructure. Identifier is already assigned to an existing node.\n" )
+            return -1
         else:
             self.nodes[node_id] = node
             print("Adding '" + str(node_id) + "' to the infrastructure.")
+            return 1
       
     def edit_node(self, node):
         node_id = node.node_id
         if node_id in self.nodes.keys():
             self.nodes[node_id] = node
             print("Editing '" + str(node_id) + "'." )
+            return 1
         else:
             print("Cannot edit '" + str(node_id) + "' since it hasn't been added to the infrastructure yet.\n " )
+            return -1
     
     def delete_node(self, node_id):
         if node_id in self.nodes.keys():
             del self.nodes[node_id]
             print("Deleting '" + str(node_id) + "' from the infrastructure.\n " )
+            return 1
         else:
             print("Cannot delete '" + str(node_id) + "' since it hasn't been added to the infrastructure yet.\n " )
+            return -1
 
     def add_thing(self, thing_id, thing_type):
         if thing_id in self.things.keys():
-            print("Cannot add '" + str(thing_id) + "' to the infrastructure. Identifier is already assigned to an existing node.\n" )
+            print("Cannot add '" + str(thing_id) + "' to the infrastructure. Identifier is already assigned to an existing thing.\n" )
+            return -1
         else:
             self.things[thing_id] = thing_type
-            print("Adding '" + str(thing_id) + "' to the infrastructure")
-            print("\t\t with type: " + str(thing_type) + "\n")
+            print("Adding '" + str(thing_id) + "' to the infrastructure.")
+            return 1
 
     def delete_thing(self, thing_id):
         if thing_id in self.things.keys():
             del self.things[thing_id]
             print("Deleting '" + str(thing_id) + "' from the infrastructure.\n " )
+            return 1
         else:
             print("Cannot delete '" + str(thing_id) + "' since it hasn't been added to the infrastructure yet.\n " )
+            return -1
 
     def get_things(self):
         return json.dumps(self.things)
@@ -75,12 +84,12 @@ class Infrastructure():
             print("Endpoint " + link.endpoint_a + " is a valid endpoint.")
         else:
             print("Endpoint " + link.endpoint_a + " is not a valid endpoint.")
-            return
+            return -1
         if link.endpoint_b in self.things or link.endpoint_b in self.nodes:
             print("Endpoint " + link.endpoint_b + " is a valid endpoint.")
         else:
             print("Endpoint " + link.endpoint_b + " is not a valid endpoint.")
-            return
+            return -1
         
         print("Adding link between " + link.endpoint_a + " and " + link.endpoint_b)
 
@@ -98,5 +107,7 @@ class Infrastructure():
         self.links[link.endpoint_b][link.endpoint_a]['bandwidth'] = link.qos_profile.bandwidth_ba
         self.links[link.endpoint_a][link.endpoint_b]['latency'] = link.qos_profile.latency
         self.links[link.endpoint_b][link.endpoint_a]['latency'] = link.qos_profile.latency
+
+        return 1
   
   
