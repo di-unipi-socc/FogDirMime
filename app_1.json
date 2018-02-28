@@ -1,0 +1,41 @@
+{
+	"components": {
+		"SmartBuilding": {
+			"hardware": {
+				"ram": 2,
+				"hdd": 10,
+				"cpu": 1
+			},
+			"software": [
+				"linux"
+			]
+		}
+	},
+	"thing_requirements": [{
+		"component": "SmartBuilding",
+		"thing_type": "temperature",
+		"qos_profile": {
+			"latency": 1000,
+			"bw_c2t": 0.1,
+			"bw_t2c": 0.1
+		}
+	}, {
+		"component": "SmartBuilding",
+		"thing_type": "fire",
+		"qos_profile": {
+			"latency": 65,
+			"bw_c2t": 0.1,
+			"bw_t2c": 0.1
+		}
+	}, {
+		"component": "SmartBuilding",
+		"thing_type": "video",
+		"qos_profile": {
+			"latency": 25,
+			"bw_c2t": 0.1,
+			"bw_t2c": 5.0
+		}
+	}],
+	"link_requirements": [
+	]
+}
