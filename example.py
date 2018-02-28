@@ -8,17 +8,18 @@ fd.add_thing("water0", "water")
 fd.add_thing("video0", "video")
 
 #fog_1
-hdd = ProbabilityDistribution([0.8, 0.10, 0.05, 0.05],[32.0, 28.0, 20.0, 16.0])
-ram = ProbabilityDistribution([0.8, 0.10, 0.05, 0.05],[4.0, 3.0, 2.0, 1.0])
 cpu = ProbabilityDistribution([0.8, 0.2],[2.0, 1.0])
+ram = ProbabilityDistribution([0.8, 0.10, 0.10],[2.0, 1.0, 0.5])
+hdd = ProbabilityDistribution([0.8, 0.10, 0.10],[16.0, 8.0, 4.0])
 hw = HardwareResources(ram, hdd, cpu)
 fog_1 = Node("fog_1", hw, ["linux", "php", "sql"])
 fd.add_node(fog_1)
 
 #fog_2
-hdd2 = ProbabilityDistribution([0.8, 0.10, 0.05, 0.05],[32.0, 28.0, 20.0, 16.0])
-ram2 = ProbabilityDistribution([0.8, 0.10, 0.05, 0.05],[2.0, 1.7, 1.5, 1.0])
-cpu2 = ProbabilityDistribution([0.8, 0.2],[2.0, 1.0])
+cpu2 = ProbabilityDistribution([0.9, 0.1],[2.0, 1.0])
+ram2 = ProbabilityDistribution([0.6, 0.20, 0.1, 0.1],[4.0, 3.0, 2.0, 1.0])
+hdd2 = ProbabilityDistribution([0.8, 0.10, 0.10],[28.0, 25.0, 20.0])
+
 hw2 = HardwareResources(ram2, hdd2, cpu2)
 fog_2 = Node("fog_2", hw2, ["linux", "php"])
 fd.add_node(fog_2)
@@ -90,20 +91,17 @@ print(fd.infrastructure.links)
 fd.sample_state()
 
 
-filename = "app.json"
+filename = "app_1.json"
 app = {}
 with open(filename) as file_object:
     app = json.load(file_object) 
 print(app)
 fd.publish_app("app1", app)
 fd.new_deployment("dep1", "app1")
-fd.deploy_component("dep1", "ThingsController", "fog_1")
+fd.deploy_component("dep1", "SmartBuilding", "fog_1")
 fd.bind_thing("dep1", 0, "temperature0")  
 fd.bind_thing("dep1", 1, "fire0") 
 fd.bind_thing("dep1", 2, "video0") 
-fd.bind_thing("dep1", 3, "water0") 
-fd.deploy_component("dep1", "DataStorage", "fog_3")
-fd.deploy_component("dep1", "Dashboard", "fog_2")
 fd.start_app("dep1")
 
 runs = 10000

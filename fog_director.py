@@ -6,6 +6,8 @@ class FogDirSim():
     def __init__(self):
         self.infrastructure = Infrastructure()
         self.app_manager = AppManager()
+        self.stuck = {}
+        self.alerts = {}
 
     def add_node(self, node):
         self.infrastructure.add_node(node)
