@@ -13,7 +13,7 @@
 	},
 	"thing_requirements": [{
 		"component": "SmartBuilding",
-		"thing_type": "temperature",
+		"thing_type": "thermostat",
 		"qos_profile": {
 			"latency": 1000,
 			"bw_c2t": 0.1,

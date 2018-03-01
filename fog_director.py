@@ -136,14 +136,12 @@ class FogDirSim():
         alerts = []
         deployment = self.app_manager.running_apps[deployment_id].deployment
         for component in deployment.keys():
-            print(component)
             node = self.infrastructure.nodes[deployment[component]]
             if (
                 node.get_available_cpu() < 0 
                 or node.get_available_hdd() < 0 
                 or node.get_available_ram() < 0
                 ):
-                print("no resources")
                 alerts.append({"alert_type":"resources", "component": component})
         return alerts
     
@@ -156,13 +154,15 @@ class FogDirSim():
             thing = deployment.things_binding[i]['thing_id']
             node = deployment.deployment[tr['component']]
             links = self.infrastructure.links
-            if (
-                not(links[node][thing]['bandwidth'].value >= q['bw_c2t'] 
+
+            if not(
+                links[node][thing]['bandwidth'].value >= q['bw_c2t'] 
                 and links[thing][node]['bandwidth'].value >= q['bw_t2c'] 
                 and links[node][thing]['latency'].value <= q['latency'] 
-                and links[thing][node]['latency'].value <= q['latency'])
+                and links[thing][node]['latency'].value <= q['latency']
                 ):
                 alerts.append({"alert_type":"c2t", "component": node, "thing": thing})
+            i= i + 1
         return alerts
     
     def check_c2c_alert(self, deployment_id):
@@ -174,6 +174,9 @@ class FogDirSim():
             node_a = deployment.deployment[a]
             node_b = deployment.deployment[b]
             q = lr['qos_profile']
+
+            print(q)
+
             if (
                 node_a != node_b 
                 and not(self.infrastructure.links[node_a][node_b]['bandwidth'].value >= q['bw_ab'] 
