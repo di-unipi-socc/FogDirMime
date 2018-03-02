@@ -6,7 +6,7 @@ class FogDirSim():
     def __init__(self):
         self.infrastructure = Infrastructure()
         self.app_manager = AppManager()
-        self.stuck = {}
+        self.failure = []
         self.alerts = {}
 
     def add_node(self, node):
@@ -47,8 +47,11 @@ class FogDirSim():
             print("Node '"+ node_id +"' can accomodate component '"+ component +"'.")
             self.app_manager.deploy_component(deployment_id, component, node_id)
             self.install(component_requirements, node_id)
+            return 1
         else:
             print("Node '"+ node_id +"' cannot accomodate component '"+ component +"'.")
+        
+        return -1
             
     def install(self, component_requirements, node_id):
         cr = component_requirements['hardware']
@@ -161,7 +164,7 @@ class FogDirSim():
                 and links[node][thing]['latency'].value <= q['latency'] 
                 and links[thing][node]['latency'].value <= q['latency']
                 ):
-                alerts.append({"alert_type":"c2t", "component": node, "thing": thing})
+                alerts.append({"alert_type":"c2t", "component": (tr['component']), "thing": thing})
             i= i + 1
         return alerts
     

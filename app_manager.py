@@ -109,6 +109,9 @@ class AppManager():
         
 
     def stop_app(self, deployment_id):
+        if deployment_id in self.deploying_apps:
+            print("Deployment id '" + deployment_id + "' corresponds to an already stopped app.")
+            return -1
         if not(deployment_id in self.running_apps):
             print("Deployment id '" + deployment_id + "' is not associated to any running app.")
             return -1
