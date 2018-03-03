@@ -97,11 +97,16 @@ with open(filename) as file_object:
     app = json.load(file_object) 
 print(app)
 
-# dep1 manages the common parts of the building
+moved1 = False
+moved2 = False
+
+#publish the application
 fd.publish_app("app1", app)
+
+# dep1 manages the common parts of the building
 fd.new_deployment("dep1", "app1")
-while fd.deploy_component("dep1", "SmartBuilding", "fog_1") != 1 :
-    print("trying deployment")
+while fd.deploy_component("dep1", "SmartBuild", "fog_2") != 1 :
+    print("*** Cannot deploy to the building switch. ***")
 fd.bind_thing("dep1", 0, "thermostat1")  
 fd.bind_thing("dep1", 1, "fire1") 
 fd.bind_thing("dep1", 2, "video0") 
@@ -109,15 +114,15 @@ fd.start_app("dep1")
 
 #dep 2 manages the house of the owner of fog1
 fd.new_deployment("dep2", "app1")
-while fd.deploy_component("dep2", "SmartBuilding", "fog_2") != 1 :
-    print("trying deployment")
+while fd.deploy_component("dep2", "SmartBuild", "fog_1") != 1 :
+    print("*** Cannot deploy to the home router. ***")
 fd.bind_thing("dep2", 0, "thermostat0")  
 fd.bind_thing("dep2", 1, "fire0") 
 fd.bind_thing("dep2", 2, "video0") 
 fd.start_app("dep2")
 
 
-runs = 1000
+runs = 10000
 
 alert_no = 0
 res_alert1 = 0
@@ -131,14 +136,12 @@ c2t_alert2 = 0
 migrations2 = 0
 
 
-nodes = ["fog_1", "fog_2", "fog_3"]
-major_failure = 0
 
 for i in range(0, runs):
     
     alerts1=fd.get_alert("dep1")
     alerts2=fd.get_alert("dep2")
-    print("****" + str(alerts1))
+
     if alerts1:
         for alert in alerts1:
             if alert['alert_type'] == 'c2t':
@@ -159,30 +162,33 @@ for i in range(0, runs):
         alert_no+=len(alerts2)
 
     for alert in alerts1:
-        if alert['alert_type'] == 'resources':
+        if alert['alert_type'] == 'resources' and not(moved1):
             migrations1 += 1
             fd.stop_app("dep1")
-            fd.undeploy_component("dep1", "SmartBuilding")
-            while fd.deploy_component("dep1", "SmartBuilding", "fog_3") != 1:
+            fd.undeploy_component("dep1", "SmartBuild")
+            while fd.deploy_component("dep1", "SmartBuild", "fog_3") != 1:
                 continue
             fd.start_app("dep1")
+            moved1 = True
             break
-
 
     for alert in alerts2:
         if alert['alert_type'] == 'resources':
             migrations2 += 1
             fd.stop_app("dep2")
-            fd.undeploy_component("dep2", "SmartBuilding")
-            while fd.deploy_component("dep2", "SmartBuilding", "fog_2") != 1:
+            fd.undeploy_component("dep2", "SmartBuild")
+            if not(moved2):
+                fog_node = "fog_2"
+            else:
+                fog_node = "fog_1"    
+            while fd.deploy_component("dep2", "SmartBuild", fog_node) != 1:
                 continue
             fd.start_app("dep2")
+            moved2 = not(moved2)
             break
 
- 
-            
-
     alerts1 = []
+    alerts2 = []
 
 
 print("Simulating management plan for", runs, "epochs.")
@@ -191,38 +197,8 @@ print("*** dep1 ***")
 print("\t Resource alerts:", res_alert1)
 print("\t A2T alerts:", c2t_alert1)
 print("\t Migrations:", migrations1)
+print()
 print("*** dep2 ***")
 print("\t Resource alerts:", res_alert2)
 print("\t A2T alerts:", c2t_alert2)
 print("\t Migrations:", migrations2)
-#print(str(alert_no) + " alerts were raised out of " + str(runs) + " runs.")
-
-
-    # if alerts1 is not None and len(alerts1) > 0 and not(fatto):
-    #     print("Moving ThingsController")
-    #     alert_no+=len(alerts1)
-    #     fd.stop_app("dep1")
-    #     fd.undeploy_component("dep1", "SmartBuilding")
-    #     fog_node = "fog_2" #rnd.choice(["fog_1", "fog_2"])
-    #     fd.deploy_component("dep1", "SmartBuilding", fog_node)
-    #     fd.start_app("dep1")
-    #     fatto = True
-
-       # if alerts1 is not None and len(alerts1) > 0:
-    #     migrations += 1
-    #     fd.stop_app("dep1")
-    #     fd.undeploy_component("dep1", "SmartBuilding")
-    #     if(nodes):
-    #         fog_node = nodes.pop()
-    #         while fd.deploy_component("dep1", "SmartBuilding", fog_node) != 1:
-    #             continue
-    #         fd.start_app("dep1")
-    #     else:
-    #         print("Major failure")
-    #         major_failure+=1
-    #         #fd.stop_app("dep1")
-    #         nodes = ["fog_1", "fog_2", "fog_3"]
-    #         fd.undeploy_component("dep1", "SmartBuilding")
-    #         while fd.deploy_component("dep1", "SmartBuilding", "fog_1") != 1 :
-    #             print("restarting deplo")
-    #         fd.start_app("dep1")
