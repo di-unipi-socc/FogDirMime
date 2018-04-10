@@ -97,11 +97,21 @@ with open(filename) as file_object:
     app = json.load(file_object) 
 print(app)
 
-# dep1 manages the common parts of the building
+moved1 = False
+moved2 = False
+
+#publish the application
 fd.publish_app("app1", app)
+
+# dep1 manages the common parts of the building
 fd.new_deployment("dep1", "app1")
+<<<<<<< HEAD
 while fd.deploy_component("dep1", "SmartBuild", "fog_1") != 1 :
     print("*** Cannot deploy to home router. ***")
+=======
+while fd.deploy_component("dep1", "SmartBuild", "fog_2") != 1 :
+    print("*** Cannot deploy to the building switch. ***")
+>>>>>>> 3d59126960111ba1f7033e60cf369b4af515875d
 fd.bind_thing("dep1", 0, "thermostat1")  
 fd.bind_thing("dep1", 1, "fire1") 
 fd.bind_thing("dep1", 2, "video0") 
@@ -109,14 +119,24 @@ fd.start_app("dep1")
 
 #dep 2 manages the house of the owner of fog1
 fd.new_deployment("dep2", "app1")
+<<<<<<< HEAD
 while fd.deploy_component("dep2", "SmartBuild", "fog_2") != 1 :
     print("Deploying SmartBuild to home router...")
+=======
+while fd.deploy_component("dep2", "SmartBuild", "fog_1") != 1 :
+    print("*** Cannot deploy to the home router. ***")
+>>>>>>> 3d59126960111ba1f7033e60cf369b4af515875d
 fd.bind_thing("dep2", 0, "thermostat0")  
 fd.bind_thing("dep2", 1, "fire0") 
 fd.bind_thing("dep2", 2, "video0") 
 fd.start_app("dep2")
 
+<<<<<<< HEAD
 runs = 1000
+=======
+
+runs = 10000
+>>>>>>> 3d59126960111ba1f7033e60cf369b4af515875d
 
 alert_no = 0
 res_alert1 = 0
@@ -130,14 +150,22 @@ c2t_alert2 = 0
 migrations2 = 0
 
 
+<<<<<<< HEAD
 moved1=False
 moved2=False
+=======
+
+>>>>>>> 3d59126960111ba1f7033e60cf369b4af515875d
 for i in range(0, runs):
     
     alerts1=fd.get_alert("dep1")
     alerts2=fd.get_alert("dep2")
+<<<<<<< HEAD
     print("****" + str(alerts1))
     print("****" + str(alerts2))
+=======
+
+>>>>>>> 3d59126960111ba1f7033e60cf369b4af515875d
     if alerts1:
         for alert in alerts1:
             if alert['alert_type'] == 'c2t':
@@ -158,16 +186,24 @@ for i in range(0, runs):
         alert_no+=len(alerts2)
 
     for alert in alerts1:
+<<<<<<< HEAD
         if alert['alert_type'] == 'resources' and not moved1:
+=======
+        if alert['alert_type'] == 'resources' and not(moved1):
+>>>>>>> 3d59126960111ba1f7033e60cf369b4af515875d
             migrations1 += 1
             moved1=True
             fd.stop_app("dep1")
             fd.undeploy_component("dep1", "SmartBuild")
+<<<<<<< HEAD
             while fd.deploy_component("dep1", "SmartBuild", "fog_2") != 1:
+=======
+            while fd.deploy_component("dep1", "SmartBuild", "fog_3") != 1:
+>>>>>>> 3d59126960111ba1f7033e60cf369b4af515875d
                 continue
             fd.start_app("dep1")
+            moved1 = True
             break
-
 
     for alert in alerts2:
         if alert['alert_type'] == 'resources' and not moved2:
@@ -175,13 +211,27 @@ for i in range(0, runs):
             moved2=True
             fd.stop_app("dep2")
             fd.undeploy_component("dep2", "SmartBuild")
+<<<<<<< HEAD
             while fd.deploy_component("dep2", "SmartBuild", "fog_3") != 1:
+=======
+            if not(moved2):
+                fog_node = "fog_2"
+            else:
+                fog_node = "fog_1"    
+            while fd.deploy_component("dep2", "SmartBuild", fog_node) != 1:
+>>>>>>> 3d59126960111ba1f7033e60cf369b4af515875d
                 continue
             fd.start_app("dep2")
+            moved2 = not(moved2)
             break
+<<<<<<< HEAD
     
     alerts2 = []
+=======
+
+>>>>>>> 3d59126960111ba1f7033e60cf369b4af515875d
     alerts1 = []
+    alerts2 = []
 
 
 print("Simulating management plan for", runs, "epochs.")
@@ -190,6 +240,7 @@ print("*** dep1 ***")
 print("\t Resource alerts:", res_alert1)
 print("\t A2T alerts:", c2t_alert1)
 print("\t Migrations:", migrations1)
+print()
 print("*** dep2 ***")
 print("\t Resource alerts:", res_alert2)
 print("\t A2T alerts:", c2t_alert2)
