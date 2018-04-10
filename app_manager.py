@@ -70,7 +70,7 @@ class AppManager():
             print("Cannot bind '" + str(thing_requirement) + "' to '"+ str(thing) + "' since it is already bound to '" + str(self.deploying_apps[deployment_id].things_binding[thing_requirement]) + "'.")
             return -1
         if thing['thing_type'] == self.deploying_apps[deployment_id].app_description['thing_requirements'][thing_requirement]['thing_type']:
-            print("Binding '" + str(thing_requirement) + "' to '"+ str(thing) + "'.")
+            print("Binding thing requirement '" + str(thing_requirement) + "' to '"+ str(thing['thing_id']) + "'.")
             self.deploying_apps[deployment_id].things_binding[thing_requirement] = thing
             return 1
         else:
@@ -196,18 +196,18 @@ class AppManager():
     def is_published_app(self, app_id):
         published_app = False
         if app_id in self.published_apps:
-            print("'" + str(app_id) + "' is a published app in FogDirector.\n" )
+            print("'" + str(app_id) + "' is a published app in FogDirector." )
             published_app = True
         else:
-            print("'" + str(app_id) + "' must be published to FogDirector before starting a new deployment.\n")
+            print("'" + str(app_id) + "' must be published to FogDirector before starting a new deployment.")
         return published_app
 
     def is_available_deployment_id(self, deployment_id):
         available_deployment_id = False
         if deployment_id in self.deploying_apps or deployment_id in self.running_apps:
-            print("'" + deployment_id +"' is already assigned to an existing deployment in FogDirector.\n")
+            print("'" + deployment_id +"' is already assigned to an existing deployment in FogDirector.")
         else:
-            print("'" + deployment_id + "' is available to start a new deployment.\n")
+            print("'" + deployment_id + "' is available to start a new deployment.")
             available_deployment_id = True
         return available_deployment_id
 

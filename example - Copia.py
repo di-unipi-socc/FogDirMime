@@ -6,10 +6,6 @@ fd.add_thing("fire0", "fire")
 fd.add_thing("thermostat0", "thermostat")
 fd.add_thing("video0", "video")
 
-fd.add_thing("fire1", "fire")
-fd.add_thing("thermostat1", "thermostat")
-
-
 #fog_1
 cpu = ProbabilityDistribution([0.8, 0.2],[2.0, 1.0])
 ram = ProbabilityDistribution([0.8, 0.10, 0.10],[2.0, 1.0, 0.5])
@@ -72,21 +68,15 @@ q_thing.sample_qos()
 
 fd.add_link(Link("thermostat0", "fog_1", q_thing))
 fd.add_link(Link("fire0", "fog_1", q_thing))
-fd.add_link(Link("thermostat1", "fog_1", q_f1_f2))
-fd.add_link(Link("fire1", "fog_1", q_f1_f2))
 fd.add_link(Link("video0", "fog_1", q_f1_f2))
 
 fd.add_link(Link("thermostat0", "fog_2", q_f1_f2))
 fd.add_link(Link("fire0", "fog_2", q_f1_f2))
-fd.add_link(Link("thermostat1", "fog_2", q_thing))
-fd.add_link(Link("fire1", "fog_2", q_thing))
 fd.add_link(Link("video0", "fog_2", q_thing))
 
 fd.add_link(Link("thermostat0", "fog_3", q_f1_f3))
 fd.add_link(Link("fire0", "fog_3", q_f1_f3))
 fd.add_link(Link("video0", "fog_3", q_f2_f3))
-fd.add_link(Link("thermostat1", "fog_3", q_f2_f3))
-fd.add_link(Link("fire1", "fog_3", q_f2_f3))
 
 fd.sample_state()
 
@@ -96,101 +86,78 @@ app = {}
 with open(filename) as file_object:
     app = json.load(file_object) 
 print(app)
-
-# dep1 manages the common parts of the building
 fd.publish_app("app1", app)
 fd.new_deployment("dep1", "app1")
-while fd.deploy_component("dep1", "SmartBuild", "fog_1") != 1 :
-    print("*** Cannot deploy to home router. ***")
-fd.bind_thing("dep1", 0, "thermostat1")  
-fd.bind_thing("dep1", 1, "fire1") 
+while fd.deploy_component("dep1", "SmartBuilding", "fog_1") != 1 :
+    print("trying deployment")
+fd.bind_thing("dep1", 0, "thermostat0")  
+fd.bind_thing("dep1", 1, "fire0") 
 fd.bind_thing("dep1", 2, "video0") 
 fd.start_app("dep1")
-
-#dep 2 manages the house of the owner of fog1
-fd.new_deployment("dep2", "app1")
-while fd.deploy_component("dep2", "SmartBuild", "fog_2") != 1 :
-    print("Deploying SmartBuild to home router...")
-fd.bind_thing("dep2", 0, "thermostat0")  
-fd.bind_thing("dep2", 1, "fire0") 
-fd.bind_thing("dep2", 2, "video0") 
-fd.start_app("dep2")
 
 runs = 1000
 
 alert_no = 0
-res_alert1 = 0
-c2c_alert1 = 0
-c2t_alert1 = 0
-migrations1 = 0
-
-res_alert2 = 0
-c2c_alert2 = 0
-c2t_alert2 = 0
-migrations2 = 0
+res_alert = 0
+c2c_alert = 0
+c2t_alert = 0
+migrations = 0
 
 
-moved1=False
-moved2=False
+nodes = ["fog_1", "fog_2", "fog_3"]
+major_failure = 0
+
 for i in range(0, runs):
     
-    alerts1=fd.get_alert("dep1")
-    alerts2=fd.get_alert("dep2")
-    print("****" + str(alerts1))
-    print("****" + str(alerts2))
-    if alerts1:
-        for alert in alerts1:
+    alerts=fd.get_alert("dep1")
+    print("****" + str(alerts))
+    if alerts:
+        for alert in alerts:
             if alert['alert_type'] == 'c2t':
-                c2t_alert1 = c2t_alert1 + 1
+                c2t_alert = c2t_alert + 1
             elif alert['alert_type'] == 'c2c':
-                c2c_alert1 = c2c_alert1 + 1
+                c2c_alert = c2c_alert + 1
             elif alert['alert_type'] == 'resources':
-                res_alert1 = res_alert1 + 1
-        alert_no+=len(alerts1)
-    if alerts2:
-        for alert in alerts2:
-            if alert['alert_type'] == 'c2t':
-                c2t_alert2 = c2t_alert2 + 1
-            elif alert['alert_type'] == 'c2c':
-                c2c_alert2 = c2c_alert2 + 1
-            elif alert['alert_type'] == 'resources':
-                res_alert2 = res_alert2 + 1
-        alert_no+=len(alerts2)
+                res_alert = res_alert + 1
+        alert_no+=len(alerts)
+    print(alert_no)
 
-    for alert in alerts1:
-        if alert['alert_type'] == 'resources' and not moved1:
-            migrations1 += 1
-            moved1=True
-            fd.stop_app("dep1")
-            fd.undeploy_component("dep1", "SmartBuild")
-            while fd.deploy_component("dep1", "SmartBuild", "fog_2") != 1:
+    if alerts is not None and len(alerts) > 0:
+        migrations += 1
+        fd.stop_app("dep1")
+        fd.undeploy_component("dep1", "SmartBuilding")
+        if(nodes):
+            fog_node = nodes.pop()
+            while fd.deploy_component("dep1", "SmartBuilding", fog_node) != 1:
                 continue
             fd.start_app("dep1")
-            break
+        else:
+            print("Major failure")
+            major_failure+=1
+            #fd.stop_app("dep1")
+            nodes = ["fog_1", "fog_2", "fog_3"]
+            fd.undeploy_component("dep1", "SmartBuilding")
+            while fd.deploy_component("dep1", "SmartBuilding", "fog_1") != 1 :
+                print("restarting deplo")
+            fd.start_app("dep1")
+            
+
+    alerts = []
+
+print("Resource alerts", res_alert)
+print("Things alerts", c2t_alert)
+print(str(alert_no) + " alerts were raised out of " + str(runs) + " runs.")
 
 
-    for alert in alerts2:
-        if alert['alert_type'] == 'resources' and not moved2:
-            migrations2 += 1
-            moved2=True
-            fd.stop_app("dep2")
-            fd.undeploy_component("dep2", "SmartBuild")
-            while fd.deploy_component("dep2", "SmartBuild", "fog_3") != 1:
-                continue
-            fd.start_app("dep2")
-            break
-    
-    alerts2 = []
-    alerts1 = []
+print(major_failure)
 
 
-print("Simulating management plan for", runs, "epochs.")
-print("*** RESULTS ***")
-print("*** dep1 ***")
-print("\t Resource alerts:", res_alert1)
-print("\t A2T alerts:", c2t_alert1)
-print("\t Migrations:", migrations1)
-print("*** dep2 ***")
-print("\t Resource alerts:", res_alert2)
-print("\t A2T alerts:", c2t_alert2)
-print("\t Migrations:", migrations2)
+    # if alerts is not None and len(alerts) > 0 and not(fatto):
+    #     print("Moving ThingsController")
+    #     alert_no+=len(alerts)
+    #     fd.stop_app("dep1")
+    #     fd.undeploy_component("dep1", "SmartBuilding")
+    #     fog_node = "fog_2" #rnd.choice(["fog_1", "fog_2"])
+    #     fd.deploy_component("dep1", "SmartBuilding", fog_node)
+    #     fd.start_app("dep1")
+    #     fatto = True
