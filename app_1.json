@@ -31,7 +31,7 @@
 		"component": "SmartBuild",
 		"thing_type": "video",
 		"qos_profile": {
-			"latency": 25, 
+			"latency": 30, 
 			"bw_c2t": 0.1,
 			"bw_t2c": 5.0
 		}
