@@ -165,9 +165,9 @@ class FogDirSim():
                 and links[thing][node]['latency'].value <= q['latency']
                 ):
                 alerts.append({"alert_type":"c2t", "component": (tr['component']), "thing": thing})
-            i= i + 1
+            i = i + 1
         return alerts
-    
+
     def check_c2c_alert(self, deployment_id):
         alerts = []
         deployment = self.app_manager.running_apps[deployment_id]
@@ -201,8 +201,6 @@ class FogDirSim():
             return 
         alerts = []
         self.sample_state()
-        self.infrastructure.sample_links()
-        self.infrastructure.sample_resources()
         alerts= alerts + (self.check_resource_alert(deployment_id))
         alerts = alerts + (self.check_c2t_alert(deployment_id))
         alerts = alerts + (self.check_c2c_alert(deployment_id))
