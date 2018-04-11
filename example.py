@@ -122,7 +122,7 @@ fd.bind_thing("dep2", 2, "video0")
 fd.start_app("dep2")
 
 
-runs = 10000
+epochs = 10000
 
 alert_no = 0
 res_alert1 = 0
@@ -136,8 +136,7 @@ c2t_alert2 = 0
 migrations2 = 0
 
 
-
-for i in range(0, runs):
+for i in range(0, epochs):
     
     alerts1=fd.get_alert("dep1")
     alerts2=fd.get_alert("dep2")
@@ -191,14 +190,14 @@ for i in range(0, runs):
     alerts2 = []
 
 
-print("Simulating management plan for", runs, "epochs.")
+print("Simulating management plan for", epochs, "epochs.")
 print("*** RESULTS ***")
-print("*** dep1 ***")
-print("\t Resource alerts:", res_alert1)
-print("\t A2T alerts:", c2t_alert1)
-print("\t Migrations:", migrations1)
+print("*** dep1 - Building IoT ***")
+print("\t Resource alerts [%]:", (res_alert1/epochs*100))
+print("\t A2T alerts [%]:", (c2t_alert1/epochs*100))
+print("\t Migrations [%]:", (migrations1/epochs*100))
 print()
-print("*** dep2 ***")
-print("\t Resource alerts:", res_alert2)
-print("\t A2T alerts:", c2t_alert2)
-print("\t Migrations:", migrations2)
+print("*** dep2 - Home IoT ***")
+print("\t Resource alerts [%]:", (res_alert2/epochs*100))
+print("\t A2T alerts [%]:", (c2t_alert2/epochs*100))
+print("\t Migrations [%]:", (migrations2/epochs*100))
