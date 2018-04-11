@@ -105,10 +105,8 @@ fd.publish_app("app1", app)
 
 # dep1 manages the common parts of the building
 fd.new_deployment("dep1", "app1")
-
 while fd.deploy_component("dep1", "SmartBuild", "fog_2") != 1 :
-    print("*** Cannot deploy to building router. ***")
-
+    print("*** Cannot deploy to the building switch. ***")
 fd.bind_thing("dep1", 0, "thermostat1")  
 fd.bind_thing("dep1", 1, "fire1") 
 fd.bind_thing("dep1", 2, "video0") 
@@ -116,18 +114,17 @@ fd.start_app("dep1")
 
 #dep 2 manages the house of the owner of fog1
 fd.new_deployment("dep2", "app1")
-
 while fd.deploy_component("dep2", "SmartBuild", "fog_1") != 1 :
-    print("Deploying SmartBuild to home router...")
+    print("*** Cannot deploy to the home router. ***")
 fd.bind_thing("dep2", 0, "thermostat0")  
 fd.bind_thing("dep2", 1, "fire0") 
 fd.bind_thing("dep2", 2, "video0") 
 fd.start_app("dep2")
 
-epochs = 10000
+
+runs = 10000
 
 alert_no = 0
-
 res_alert1 = 0
 c2c_alert1 = 0
 c2t_alert1 = 0
@@ -138,16 +135,12 @@ c2c_alert2 = 0
 c2t_alert2 = 0
 migrations2 = 0
 
-moved1=False
-moved2=False
 
-for i in range(0, epochs):
+
+for i in range(0, runs):
     
     alerts1=fd.get_alert("dep1")
     alerts2=fd.get_alert("dep2")
-
-    # print(alerts1)
-    # print(alerts2)
 
     if alerts1:
         for alert in alerts1:
@@ -158,7 +151,6 @@ for i in range(0, epochs):
             elif alert['alert_type'] == 'resources':
                 res_alert1 = res_alert1 + 1
         alert_no+=len(alerts1)
-
     if alerts2:
         for alert in alerts2:
             if alert['alert_type'] == 'c2t':
@@ -174,7 +166,7 @@ for i in range(0, epochs):
             migrations1 += 1
             fd.stop_app("dep1")
             fd.undeploy_component("dep1", "SmartBuild")
-            while fd.deploy_component("dep1", "SmartBuild", "fog_2") != 1:
+            while fd.deploy_component("dep1", "SmartBuild", "fog_3") != 1:
                 continue
             fd.start_app("dep1")
             moved1 = True
@@ -195,10 +187,11 @@ for i in range(0, epochs):
             moved2 = not(moved2)
             break
 
-    alerts1, alerts2 = [], []
+    alerts1 = []
+    alerts2 = []
 
 
-print("Simulating management plan for", epochs, "epochs.")
+print("Simulating management plan for", runs, "epochs.")
 print("*** RESULTS ***")
 print("*** dep1 ***")
 print("\t Resource alerts:", res_alert1)
