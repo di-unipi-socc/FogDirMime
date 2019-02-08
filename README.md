@@ -3,7 +3,7 @@ Core of a simulation environment for Fog application management with CISCO FogDi
 
 FogDirMime is based upon the work described in:
 
-> [Stefano Forti](http://pages.di.unipi.it/forti), [Antonio Brogi](http://pages.di.unipi.it/brogi), [Ahmad Ibrahim](http://pages.di.unipi.it/ibrahim) <br>
+> [Stefano Forti](http://pages.di.unipi.it/forti), [Ahmad Ibrahim](http://pages.di.unipi.it/ibrahim), [Antonio Brogi](http://pages.di.unipi.it/brogi) <br>
 > **[Mimicking FogDirector Application Management.](http://pages.di.unipi.it/forti/pdf/journals/2018/csrd18.pdf)** <br>
 > in *[Software-Intensive Cyber-Physical Systems](https://www.springer.com/computer/journal/450)*, Springer, 2019.
 
